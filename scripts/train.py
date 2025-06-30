@@ -46,7 +46,7 @@ def main(args):
     args.logs.mkdir(parents=True, exist_ok=True)
 
     # Set up data module
-    dm = ExceiverDataModule.from_argparse_args(args)
+    dm = ExceiverDataModule(data_path=args.data_path,classify=args.classify)
     dm.prepare_data()
 
     # Condense args
@@ -83,14 +83,21 @@ def main(args):
 
     # Set up Trainer
     start = datetime.now()
-    trainer = Trainer.from_argparse_args(
-        args,
-        default_root_dir=logger.log_dir,
+    trainer = Trainer(
+        strategy=args.strategy,
+        devices=1,
+        callbacks=[early_stop,checkpoint_callback],
         logger=logger,
-        callbacks=[early_stop, checkpoint_callback],
         profiler="simple",
-        replace_sampler_ddp=False,
     )
+    # trainer = Trainer.from_argparse_args(
+    #     args,
+    #     default_root_dir=logger.log_dir,
+    #     logger=logger,
+    #     callbacks=[early_stop, checkpoint_callback],
+    #     profiler="simple",
+    #     replace_sampler_ddp=False,
+    # )
 
     # Train model
     trainer.fit(model, dm)
@@ -108,11 +115,15 @@ if __name__ == "__main__":
     parser.add_argument("--name", type=str, help="Prepended name of experiment.")
     parser.add_argument("--logs", type=Path, help="Path to model logs and checkpoints.")
     parser.add_argument("--load", type=str, default=None, help="Path to checkpoint to load into model.")
+    parser.add_argument("--strategy",type=str,default="ddp")
+    # parser.add_argument("--strategy", type=str, default="ddp", help="Distribution strategy.")
+    # parser.add_argument("--gpus", type=int, default=1, help="Path to checkpoint to load into model.")
+    
 
     # Add arguments from classes
     parser = Exceiver.add_argparse_args(parser)
     parser = ExceiverDataModule.add_argparse_args(parser)
-    parser = Trainer.add_argparse_args(parser)
+   
 
     # Parse arguments and train
     args = parser.parse_args()

@@ -257,28 +257,28 @@ class Exceiver(pl.LightningModule):
             weight_decay=self.hparams.weight_decay,
         )
 
-    def optimizer_step(
-        self,
-        current_epoch,
-        batch_nb,
-        optimizer,
-        optimizer_idx,
-        closure,
-        on_tpu=False,
-        using_native_amp=False,
-        using_lbfgs=False,
-    ):
-        # warm up lr
-        if self.trainer.global_step < self.hparams.warmup_steps:
-            lr_scale = min(
-                1.0,
-                float(self.trainer.global_step + 1) / float(self.hparams.warmup_steps),
-            )
-            for pg in optimizer.param_groups:
-                pg["lr"] = lr_scale * self.hparams.learning_rate
+    # def optimizer_step(
+    #     self,
+    #     current_epoch,
+    #     batch_nb,
+    #     optimizer,
+    #     optimizer_idx,
+    #     closure,
+    #     on_tpu=False,
+    #     using_native_amp=False,
+    #     using_lbfgs=False,
+    # ):
+    #     # warm up lr
+    #     if self.trainer.global_step < self.hparams.warmup_steps:
+    #         lr_scale = min(
+    #             1.0,
+    #             float(self.trainer.global_step + 1) / float(self.hparams.warmup_steps),
+    #         )
+    #         for pg in optimizer.param_groups:
+    #             pg["lr"] = lr_scale * self.hparams.learning_rate
 
-        # update params
-        optimizer.step(closure=closure)
+    #     # update params
+    #     optimizer.step(closure=closure)
 
 
 class ExceiverClassifier(Exceiver):
